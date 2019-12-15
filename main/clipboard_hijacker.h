@@ -5,15 +5,18 @@
 
 class Clipboard_hijacker : public QObject
 {
-
+Q_OBJECT
 public:
-    void hijack();
     Clipboard_hijacker();
+    //void hijack(QClipboard *clipboard);
     bool clipboardhasChanged;
-    QString getclipboardData();
+    QString getclipboardString();
+    QImage getclipboardImage();
+    const QMimeData *getMimeData();
+    ~Clipboard_hijacker();
 private slots:
     void clipboardChanged();
-    void setClipboard();
+    //void setClipboard();
 private:
 
 };

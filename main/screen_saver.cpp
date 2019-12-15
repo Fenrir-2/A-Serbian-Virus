@@ -1,3 +1,4 @@
+
 #include <QtWidgets>
 
 #include "screen_saver.h"

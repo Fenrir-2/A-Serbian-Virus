@@ -1,5 +1,5 @@
 #include "anti_debug.h"
-
+/*
 anti_debug::anti_debug()
 {
     bool isDebugged = true;
@@ -12,7 +12,7 @@ anti_debug::anti_debug()
             "nop"
         );
     }
-    catch (EXCEPTION_EXECUTE_HANDLER)
+    catch (signal()) //handle the sigterm or SigSegV
     {
         // If an exception has been raised – debugger is not present
         isDebugged = false;
@@ -23,3 +23,4 @@ anti_debug::anti_debug()
         exit(-1);
     }
 }
+*/
