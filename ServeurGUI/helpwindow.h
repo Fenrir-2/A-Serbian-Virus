@@ -16,9 +16,6 @@ public:
     explicit HelpWindow(QWidget *parent = nullptr);
     ~HelpWindow();
 
-private slots:
-    void on_buttonBox_clicked(QAbstractButton *button);
-
 private:
     Ui::HelpWindow *ui;
 };
