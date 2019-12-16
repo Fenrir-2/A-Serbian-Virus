@@ -1,26 +1,26 @@
 #include "anti_debug.h"
-/*
+#include <QtWidgets>
+#include <QApplication>
+#include <QDebug>
+#include <stdio.h>
+#include <stdlib.h>
+#define DBG_PRINTEXCEPTION_WIDE_C 0x4001000A
+
 anti_debug::anti_debug()
 {
-    bool isDebugged = true;
-    try
+
+try
+{
+    if (ptrace(PTRACE_TRACEME, 0, NULL, 0) == -1)
     {
-        __asm(
-            "pushfd"
-            "or dword ptr[esp], 0x100" // set the Trap Flag
-            "popfd"                    // Load the value into EFLAGS register
-            "nop"
-        );
+        RaiseException(DBG_PRINTEXCEPTION_WIDE_C, 0, 4, args);
+        printf("Debugger detected");
     }
-    catch (signal()) //handle the sigterm or SigSegV
-    {
-        // If an exception has been raised – debugger is not present
-        isDebugged = false;
-    }
-    if (isDebugged)
-    {
-        std::cout << "Stop debugging program!" << std::endl;
-        exit(-1);
-    }
+
 }
-*/
+catch (std::exception& e) //handle the sigterm or SigSegV
+{
+    printf("Debugger NOT detected");
+}
+}
+
