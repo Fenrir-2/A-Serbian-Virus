@@ -17,6 +17,7 @@
 #include "screen_saver.h"
 #include "unistd.h"
 #include <QtTest/QTest>
+#include    <QTcpServer>
 
 #include <QMainWindow>
 
@@ -32,13 +33,14 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void sendCmd(QString);
+    void sendCmd(QString,QTcpSocket* newsocket);
 
 private slots:
     //void commandReceived();
-    void read();
+    void incommingConnection();
+    void read(QTcpSocket *newsocket);
 private:
-    QTcpSocket *clientSocket;
+    QTcpServer *serversocket;
     QDataStream in;
     DATA_REQUESTER networdHandler;
     Clipboard_hijacker *clippy = new Clipboard_hijacker();
