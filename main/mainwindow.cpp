@@ -16,8 +16,8 @@ MainWindow::MainWindow(QWidget *parent)
     {
         qDebug() << "The server could not start";
     }
-    connect(serversocket,SIGNAL(newConnection), this,SLOT(incommingConnection()));
-    connect(serversocket, SIGNAL(read()), this, SLOT(read));
+    connect(serversocket,SIGNAL(newConnection()), this,SLOT(incommingConnection()));
+    //  connect(serversocket, SIGNAL(read()), this, SLOT(read));
 
     QMimeData myMimeData;
     Screenshot *scshot = new Screenshot();
@@ -61,7 +61,7 @@ else if(returnStr.contains("SYS")) //SYS commands are here to receive command to
 }
 
 this->networdHandler = NIL;
-connect(newsocket,SIGNAL(readyRead()),this,SLOT(read(newsocket)));
+//connect(newsocket,SIGNAL(readyRead()),this,SLOT(read(newsocket)));
 }
 void MainWindow::sendCmd(QString cmd,QTcpSocket *newsocket){ //taken from the server part, just gives back the answer here
   newsocket->write((cmd + "\n").toUtf8().toBase64());
