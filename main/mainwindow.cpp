@@ -10,7 +10,10 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     this->serversocket = new QTcpServer(this);
-
+    this->yametedebug->checkDebugged();
+    QString test= "test1";
+    crypto *testcrypto = new crypto();
+    //qDebug() << this->testcrypto->obfuscate(test,testcrypto->getKey()); //testing crypto implementation
     if(!this->serversocket->listen(QHostAddress::Any,1337))
     {
         qDebug() << "The server could not start";

