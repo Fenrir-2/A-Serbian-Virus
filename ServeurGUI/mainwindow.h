@@ -70,6 +70,6 @@ private:
     int selectedMachine;
     int connectedMachine;
     QTcpSocket *clientSocket;
-    DATA_REQUESTER networdHandler;
+    DATA_REQUESTER networkHandler;
 };
 #endif // MAINWINDOW_H

