@@ -15,8 +15,6 @@
 
 
 TODO: Load the DB into the treeview using std::queue
-      Setup the handler switching using switch
-      Define the read behavior according to the handlers -> new window like Information to print the result of a cmd
 
 
 
@@ -97,11 +95,6 @@ void MainWindow::on_clipboardButton_clicked()
     resetStatusTimer(3);
 
     this->networdHandler = CLP;
-
-    //Waiting for transmission to be over
-    ClipboardWindow* c = new ClipboardWindow(this, "returnStr");
-    c->show();
-    c->setFocus();
 }
 
 /**
@@ -310,8 +303,42 @@ void MainWindow::displayError(QTcpSocket::SocketError socketError)
  * @brief MainWindow::read Called when data arrives on the socket
  */
 void MainWindow::read(){
-  QString returnStr = this->clientSocket->readAll();
-  qDebug() << returnStr;
+  QString returnStr = QByteArray::fromBase64(this->clientSocket->readAll());
+
+  switch (this->networdHandler) {
+    case SYS:
+      {
+        ClipboardWindow* c = new ClipboardWindow(this, returnStr);
+        c->show();
+        break;
+      }
+    case CLP:
+      {
+        ClipboardWindow* c = new ClipboardWindow(this, returnStr);
+        c->show();
+        c->setFocus();
+        break;
+      }
+    case EXT:
+      {
+        QString fileName = QFileDialog::getSaveFileName(this,tr("Open Database"), "",tr("Virus database (*.vdb)"));
+        QFile *saveFile = new QFile(fileName);
+        if (!saveFile->open(QIODevice::WriteOnly)) {
+            qWarning("Couldn't open save file.");
+            return;
+        }
+        saveFile->write(returnStr.toUtf8());
+        break;
+      }
+    case SCR:
+      QMessageBox::information(this, "Serbian Command", "Not implemented yet");
+      break;
+    default:
+      qDebug() << "Received unwanted response: " + returnStr;
+      break;
+  }
+
+  this->networdHandler = NIL;
 }
 
 /**

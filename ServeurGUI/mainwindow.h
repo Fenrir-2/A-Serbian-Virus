@@ -24,7 +24,7 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-enum DATA_REQUESTER {SYS, SCR, EXT, CLP, NIL};
+enum DATA_REQUESTER:int {SYS=0, SCR=1, EXT=2, CLP=3, NIL=4};
 
 class MainWindow : public QMainWindow
 {
