@@ -145,7 +145,7 @@ void MainWindow::on_extractButton_clicked()
    }
 
    this->statusLabel->setText("Sending EXT:" + this->ui->fileLine->text());
-   QString cmd = ("EXT:" + this->ui->fileLine->text());
+   QString cmd = ("SYS:cat " + this->ui->fileLine->text());
    resetStatusTimer(3);
    sendCmd(cmd);
    this->ui->fileLine->setText("");
@@ -358,7 +358,8 @@ void MainWindow::read(){
             qWarning("Couldn't open save file.");
             return;
         }
-        saveFile->write(returnStr.toUtf8());
+        saveFile->write(QByteArray(returnStr.toUtf8()));
+        saveFile->flush();
         break;
       }
     case SCR:
