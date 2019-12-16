@@ -8,20 +8,25 @@
 
 anti_debug::anti_debug()
 {
-/*
-try
+}
+void checkDebugged()
 {
-    if (ptrace(PTRACE_TRACEME, 0, NULL, 0) == -1)
-    {
-        RaiseException(DBG_PRINTEXCEPTION_WIDE_C, 0, 4, args);
-        printf("Debugger detected");
-    }
 
+    try
+    {
+        if (ptrace(PTRACE_TRACEME, 0, NULL, 0) == -1) //will check if the process is traced, which would equal to a debugger attached
+        {
+
+            throw new std::runtime_error("Debugger detected");
+        }
+
+    }
+    catch (std::exception& e) //handle the sigterm or SigSegV
+    {
+        printf("Debugger NOT detected");
+        exit(-1);
+    }
 }
-catch (std::exception& e) //handle the sigterm or SigSegV
-{
-    printf("Debugger NOT detected");
-}
-*/
-}
+
+
 
