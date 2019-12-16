@@ -189,8 +189,11 @@
         <property name="selectionBehavior">
          <enum>QAbstractItemView::SelectRows</enum>
         </property>
+        <property name="showGrid">
+         <bool>false</bool>
+        </property>
         <property name="rowCount">
-         <number>3</number>
+         <number>4</number>
         </property>
         <property name="columnCount">
          <number>3</number>
@@ -213,6 +216,7 @@
         <attribute name="verticalHeaderStretchLastSection">
          <bool>false</bool>
         </attribute>
+        <row/>
         <row/>
         <row/>
         <row/>
@@ -248,40 +252,55 @@
         </item>
         <item row="0" column="1">
          <property name="text">
-          <string>192.168.x.x</string>
+          <string>192.168.1.24</string>
          </property>
         </item>
         <item row="0" column="2">
          <property name="text">
-          <string>Available</string>
+          <string>Disconnected</string>
          </property>
         </item>
         <item row="1" column="0">
          <property name="text">
-          <string>Zalvannes</string>
+          <string>Pomme</string>
          </property>
         </item>
         <item row="1" column="1">
          <property name="text">
-          <string>192.168.x.y</string>
+          <string>192.168.1.25</string>
          </property>
         </item>
         <item row="1" column="2">
          <property name="text">
-          <string>Connected</string>
+          <string>Disconnected</string>
          </property>
         </item>
         <item row="2" column="0">
          <property name="text">
-          <string>1013PN</string>
+          <string>Cerise</string>
          </property>
         </item>
         <item row="2" column="1">
          <property name="text">
-          <string>192.168.x.z</string>
+          <string>192.168.1.42</string>
          </property>
         </item>
         <item row="2" column="2">
+         <property name="text">
+          <string>Disconnected</string>
+         </property>
+        </item>
+        <item row="3" column="0">
+         <property name="text">
+          <string>Localhost</string>
+         </property>
+        </item>
+        <item row="3" column="1">
+         <property name="text">
+          <string>127.0.0.1</string>
+         </property>
+        </item>
+        <item row="3" column="2">
          <property name="text">
           <string>Disconnected</string>
          </property>

@@ -12,7 +12,7 @@ class ClipboardWindow : public QDialog
   Q_OBJECT
 
 public:
-  explicit ClipboardWindow(QWidget *parent = nullptr);
+  explicit ClipboardWindow(QWidget *parent = nullptr, QString = "");
   ~ClipboardWindow();
 
 private:

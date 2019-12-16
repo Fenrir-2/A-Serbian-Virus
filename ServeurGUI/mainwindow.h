@@ -12,6 +12,7 @@
 #include <QTcpSocket>
 #include <QMessageBox>
 #include <QTimer>
+#include <QClipboard>
 
 //FOR DEBUG PURPOSES
 #include <iostream>
@@ -22,6 +23,8 @@
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
+
+enum DATA_REQUESTER {SYS, SCR, EXT, CLP, NIL};
 
 class MainWindow : public QMainWindow
 {
@@ -60,5 +63,6 @@ private:
     QTcpSocket *clientSocket;
     QDataStream in;
     quint32 blockSize;
+    DATA_REQUESTER networdHandler;
 };
 #endif // MAINWINDOW_H
