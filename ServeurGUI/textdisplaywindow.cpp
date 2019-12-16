@@ -1,7 +1,7 @@
-#include "clipboardwindow.h"
+#include "textdisplaywindow.h"
 #include "ui_clipboardwindow.h"
 
-ClipboardWindow::ClipboardWindow(QWidget *parent, QString clip) :
+TextDisplayWindows::TextDisplayWindows(QWidget *parent, QString clip) :
   QDialog(parent),
   ui(new Ui::ClipboardWindow)
 {
@@ -9,7 +9,7 @@ ClipboardWindow::ClipboardWindow(QWidget *parent, QString clip) :
   this->ui->clipboardBrowser->setText(clip);
 }
 
-ClipboardWindow::~ClipboardWindow()
+TextDisplayWindows::~TextDisplayWindows()
 {
   delete ui;
 }

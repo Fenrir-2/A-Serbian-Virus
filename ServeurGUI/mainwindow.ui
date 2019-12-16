@@ -359,8 +359,26 @@
  <resources>
   <include location="Resources.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>tableWidget</sender>
+   <signal>cellDoubleClicked(int,int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>machineDoubleClicked(int,int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>89</x>
+     <y>117</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>5</x>
+     <y>207</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <slots>
   <slot>selectedMachineChanged(int,int)</slot>
+  <slot>machineDoubleClicked(int,int)</slot>
  </slots>
 </ui>

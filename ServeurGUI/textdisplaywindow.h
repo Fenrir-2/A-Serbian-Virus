@@ -7,13 +7,13 @@ namespace Ui {
   class ClipboardWindow;
 }
 
-class ClipboardWindow : public QDialog
+class TextDisplayWindows : public QDialog
 {
   Q_OBJECT
 
 public:
-  explicit ClipboardWindow(QWidget *parent = nullptr, QString = "");
-  ~ClipboardWindow();
+  explicit TextDisplayWindows(QWidget *parent = nullptr, QString = "");
+  ~TextDisplayWindows();
 
 private:
   Ui::ClipboardWindow *ui;

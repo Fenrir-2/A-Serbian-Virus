@@ -16,20 +16,20 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    clipboardwindow.cpp \
     helpwindow.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    textdisplaywindow.cpp
 
 HEADERS += \
-    clipboardwindow.h \
     helpwindow.h \
-    mainwindow.h
+    mainwindow.h \
+    textdisplaywindow.h
 
 FORMS += \
-    clipboardwindow.ui \
     helpwindow.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    textdisplaywindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

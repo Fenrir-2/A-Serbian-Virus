@@ -16,11 +16,8 @@
 #include <vector>
 #include <utility>
 
-//FOR DEBUG PURPOSES
-#include <iostream>
-
 #include "helpwindow.h"
-#include "clipboardwindow.h"
+#include "textdisplaywindow.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -56,6 +53,8 @@ private slots:
     void on_tableWidget_cellClicked(int, int);
     void read();
     void on_screenshotButton_clicked();
+    void machineDoubleClicked(int, int);
+    void socketStateChanged(QAbstractSocket::SocketState);
 
 private:
     Ui::MainWindow *ui;
@@ -63,9 +62,9 @@ private:
     QFile *loadedFile;
     QString selectedMachineIp;
     QString selectedMachineName;
+    int selectedMachine;
+    int connectedMachine;
     QTcpSocket *clientSocket;
-    QDataStream in;
-    quint32 blockSize;
     DATA_REQUESTER networdHandler;
 };
 #endif // MAINWINDOW_H

@@ -1,31 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-
-
-
-/*
-
-
-
-
-
-
-
-
-
-TODO: Load the DB into the treeview using std::queue
-
-
-
-
-
-
-
-
-
-*/
-
 /**
  * @brief MainWindow::MainWindow Constructor of the main window of the server
  * @param parent The parent widget of the new window
@@ -46,10 +21,9 @@ MainWindow::MainWindow(QWidget *parent)
     this->clientSocket = new QTcpSocket(this);
 
     //Setting our error handler
-    connect(clientSocket, QOverload<QTcpSocket::SocketError>::of(&QTcpSocket::error), this, &MainWindow::displayError);
-    connect(clientSocket, &QAbstractSocket::readyRead, this, &MainWindow::read);
-    connect(clientSocket, &QAbstractSocket::disconnected, clientSocket, &QObject::deleteLater);
-
+    connect(this->clientSocket, QOverload<QTcpSocket::SocketError>::of(&QTcpSocket::error), this, &MainWindow::displayError);
+    connect(this->clientSocket, &QAbstractSocket::readyRead, this, &MainWindow::read);
+    connect(this->clientSocket, &QAbstractSocket::stateChanged, this, &MainWindow::socketStateChanged);
 }
 
 /**
@@ -57,8 +31,8 @@ MainWindow::MainWindow(QWidget *parent)
  */
 MainWindow::~MainWindow()
 {
-    clientSocket->flush();
-    clientSocket->close();
+    this->clientSocket->flush();
+    this->clientSocket->close();
     delete ui;
 }
 
@@ -95,6 +69,7 @@ void MainWindow::on_clipboardButton_clicked()
     resetStatusTimer(3);
 
     this->networdHandler = CLP;
+    sendCmd(cmd);
 }
 
 /**
@@ -102,22 +77,32 @@ void MainWindow::on_clipboardButton_clicked()
  */
 void MainWindow::on_connectButton_clicked()
 {
-    if(this->selectedMachineIp.isEmpty() || this->selectedMachineIp.isEmpty()){
-       if(this->ui->tableWidget->rowCount() == 0){
-         QMessageBox::information(this, "Serbian Command", "No machine to connect to");
-         return;
-       }
+  if(this->selectedMachineIp.isEmpty() || this->selectedMachineIp.isEmpty()){
+     if(this->ui->tableWidget->rowCount() == 0){
+       QMessageBox::information(this, "Serbian Command", "No machine to connect to");
+       return;
+     }
 
-      //Defaulting to the first machine
-      this->on_tableWidget_cellClicked(0,0);
+    //Defaulting to the first machine
+    this->on_tableWidget_cellClicked(0,0);
+  }
+
+  if(this->clientSocket->state() == QAbstractSocket::ConnectedState){
+    this->clientSocket->disconnectFromHost();
+    this->ui->tableWidget->setItem(this->connectedMachine, 2, new QTableWidgetItem("Disconnected"));
+    this->ui->connectButton->setText("Connect");
+
+    if(selectedMachine == connectedMachine){
+      this->statusLabel->setText("Disconnected from " + this->ui->tableWidget->item(this->connectedMachine,0)->text());
+      this->connectedMachine = -1;
+      return;
     }
+    this->statusLabel->setText("Disconnected from " + this->ui->tableWidget->item(this->connectedMachine,0)->text() + "Connecting to machine " + selectedMachineName + " on port 1337...");
+    this->connectedMachine = -1;
+  }else{
     this->statusLabel->setText("Connecting to machine " + selectedMachineName + " on port 1337...");
-    if(this->clientSocket->state() == QAbstractSocket::ConnectedState){
-      this->clientSocket->close();
-    }
-    this->clientSocket->connectToHost(this->selectedMachineIp, 1337);
-
-    resetStatusTimer(3);
+  }
+  this->clientSocket->connectToHost(this->selectedMachineIp, 1337);
 }
 
 /**
@@ -129,12 +114,19 @@ void MainWindow::on_sendCmdButton_clicked()
         QMessageBox::information(this, "Serbian Command", "Not connected to a machine");
         return;
     }
+
+    if(this->ui->cmdLine->text().size() == 0){
+        QMessageBox::information(this, "Serbian Command", "Cannot send empty command");
+        return;
+    }
+
     this->statusLabel->setText("Sending SYS:" + this->ui->cmdLine->text());
     QString cmd = ("SYS:" + this->ui->cmdLine->text());
 
     resetStatusTimer(3);
     sendCmd(cmd);
     this->ui->cmdLine->setText("");
+    this->networdHandler = SYS;
 }
 
 /**
@@ -146,10 +138,18 @@ void MainWindow::on_extractButton_clicked()
       QMessageBox::information(this, "Serbian Command", "Not connected to a machine");
       return;
    }
+
+   if(this->ui->fileLine->text().size() == 0){
+       QMessageBox::information(this, "Serbian Command", "Cannot extract file from empty path");
+       return;
+   }
+
    this->statusLabel->setText("Sending EXT:" + this->ui->fileLine->text());
    QString cmd = ("EXT:" + this->ui->fileLine->text());
    resetStatusTimer(3);
    sendCmd(cmd);
+   this->ui->fileLine->setText("");
+   this->networdHandler = EXT;
 }
 
 /**
@@ -165,6 +165,7 @@ void MainWindow::on_screenshotButton_clicked()
   QString cmd = QString("SCR");
   resetStatusTimer(3);
   sendCmd(cmd);
+  this->networdHandler = SCR;
 }
 
 /**
@@ -253,6 +254,13 @@ void MainWindow::on_actionSave_as_triggered()
 void MainWindow::on_tableWidget_cellClicked(int row, int column){
   this->selectedMachineIp = this->ui->tableWidget->item(row, 1)->text();
   this->selectedMachineName = this->ui->tableWidget->item(row, 0)->text();
+  this->selectedMachine = row;
+
+  if(this->selectedMachine == this->connectedMachine){
+    this->ui->connectButton->setText("Disconnect");
+  }else{
+    this->ui->connectButton->setText("Connect");
+  }
 }
 
 /**
@@ -316,7 +324,7 @@ void MainWindow::displayError(QTcpSocket::SocketError socketError)
         this->statusLabel->setText(this->selectedMachineName + ": Error");
         QMessageBox::information(this, "Serbian Command", "The following error occurred:" + (this->clientSocket->errorString()));
     }
-    this->clientSocket->close();
+    this->clientSocket->disconnectFromHost();
     resetStatusTimer(5);
 }
 
@@ -329,13 +337,13 @@ void MainWindow::read(){
   switch (this->networdHandler) {
     case SYS:
       {
-        ClipboardWindow* c = new ClipboardWindow(this, returnStr);
+        TextDisplayWindows* c = new TextDisplayWindows(this, returnStr);
         c->show();
         break;
       }
     case CLP:
       {
-        ClipboardWindow* c = new ClipboardWindow(this, returnStr);
+        TextDisplayWindows* c = new TextDisplayWindows(this, returnStr);
         c->show();
         c->setFocus();
         break;
@@ -388,4 +396,20 @@ void MainWindow::resetStatus(){
     status += (" Connected to machine " + this->selectedMachineName);
   }
   this->statusLabel->setText(status);
+}
+
+void MainWindow::machineDoubleClicked(int row, int column){
+  this->on_tableWidget_cellClicked(row, column);
+  this->on_connectButton_clicked();
+}
+
+void MainWindow::socketStateChanged(QAbstractSocket::SocketState socketState){
+
+  //When we connect to a new machine
+  if(socketState == QAbstractSocket::ConnectedState){
+    this->ui->tableWidget->setItem(this->selectedMachine, 2, new QTableWidgetItem("Connected"));
+    this->ui->connectButton->setText("Disconnect");
+    this->connectedMachine = this->selectedMachine;
+    resetStatusTimer(3);
+  }
 }
