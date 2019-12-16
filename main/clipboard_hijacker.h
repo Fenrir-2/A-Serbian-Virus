@@ -16,10 +16,8 @@ public:
     ~Clipboard_hijacker();
 private slots:
     void clipboardhasChanged();
-    //QClipboard::dataChanged();
-    //void setClipboard();
+
 private:
-    //void clipboardhasChanged(Clipboard_hijacker *clipchanged);
 };
 
 #endif // CLIPBOARD_HIJACKER_H

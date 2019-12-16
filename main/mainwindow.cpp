@@ -49,39 +49,6 @@ void MainWindow::read(){
       MainWindow::sendCmd(output);
 
   }
-  switch (this->networdHandler) {
-/*
-    case SYS:
-      {
-        ClipboardWindow* c = new ClipboardWindow(this, returnStr);
-        c->show();
-        break;
-      }
-      */
-    case CLP:
-      {
-        MainWindow::sendCmd(this->clippy->getclipboardString());
-        break;
-      }
-
-    case EXT:
-      {
-        QString fileName = QFileDialog::getSaveFileName(this,tr("Open Database"), "",tr("Virus database (*.vdb)"));
-        QFile *saveFile = new QFile(fileName);
-        if (!saveFile->open(QIODevice::WriteOnly)) {
-            qWarning("Couldn't open save file.");
-            return;
-        }
-        saveFile->write(returnStr.toUtf8());
-        break;
-      }
-    case SCR:
-      QMessageBox::information(this, "Serbian Command", "Not implemented yet");
-      break;
-    default:
-      qDebug() << "Received unwanted response: " + returnStr;
-      break;
-  }
 
   this->networdHandler = NIL;
 }

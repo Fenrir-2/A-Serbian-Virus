@@ -12,26 +12,12 @@ Clipboard_hijacker::Clipboard_hijacker()
         const QClipboard *clipboard = QApplication::clipboard();
         QString clipboardText = clipboard->text();
         connect(QApplication::clipboard(), SIGNAL(dataChanged()),this, SLOT(clipboardhasChanged()));
-        //testing if it works
 }
-/*
-void Clipboard_hijacker::hijack(QClipboard *clipboard)
-{
-    const QMimeData *mimeData = clipboard->mimeData();
-    QLabel labelforimages;
 
-
-}
-*/
 void Clipboard_hijacker::clipboardhasChanged()
 {
-    //QRandomGenerator *randomNumber;
-    qDebug() << "well i'm there";
-    //qDebug() << randomNumber;
+
     QString filename = QString::number(QRandomGenerator::global()->generate());
-    //qDebug() << randomNumber->generate();
-    qDebug() << "entered";
-    //qDebug() << randomNumber;
     while(QFileInfo::exists(filename))
     {
         filename=QString::number(QRandomGenerator::global()->generate());
@@ -39,7 +25,6 @@ void Clipboard_hijacker::clipboardhasChanged()
     }
     //From there, filename has to be unique, avoid colisions (here it's useless but implemented for maybe later use since we could rewrite data in the file)
     QFile *file = new QFile(filename+".txt");
-    qDebug() << filename;
     if(!file->open(QIODevice::ReadWrite))
     {
         qWarning("Couldn't save the file");
