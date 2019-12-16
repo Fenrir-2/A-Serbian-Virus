@@ -1,24 +1,55 @@
-
+#include <QScreen>
 #include <QtWidgets>
 
 #include "screen_saver.h"
 
-//TODO: Replace Qlist with STL lists/vectors
-screenshot::screenshot()
+Screenshot::Screenshot()
+    :  screenshotLabel(new QLabel(this))
 {
-    screenshotLabel = new QLabel;
     screenshotLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     screenshotLabel->setAlignment(Qt::AlignCenter);
-    screenshotLabel->setMinimumSize(240, 160);
+    QList<QScreen *> screens = QGuiApplication::screens();
+    QList<QPixmap> pixmapsList;
+    for (int i=0; i<screens.size(); i++)
+    {
+       const QRect r = screens[i]->geometry();
+       pixmapsList.push_back(screens[i]->grabWindow((0), r.x(), r.y(), r.width(), r.height()));
+    }
+    //screenshotLabel->setMinimumSize(screenGeometry.width() / 8, screenGeometry.height() / 8);
 
-    createOptionsGroupBox();
-    createButtonsLayout();
-
-    mainLayout = new QVBoxLayout;
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(screenshotLabel);
+
+    QGroupBox *optionsGroupBox = new QGroupBox(tr("Options"), this);
+    delaySpinBox = new QSpinBox(optionsGroupBox);
+    delaySpinBox->setSuffix(tr(" s"));
+    delaySpinBox->setMaximum(60);
+
+    connect(delaySpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &Screenshot::updateCheckBox);
+
+    hideThisWindowCheckBox = new QCheckBox(tr("Hide This Window"), optionsGroupBox);
+
+    QGridLayout *optionsGroupBoxLayout = new QGridLayout(optionsGroupBox);
+    optionsGroupBoxLayout->addWidget(new QLabel(tr("Screenshot Delay:"), this), 0, 0);
+    optionsGroupBoxLayout->addWidget(delaySpinBox, 0, 1);
+    optionsGroupBoxLayout->addWidget(hideThisWindowCheckBox, 1, 0, 1, 2);
+
     mainLayout->addWidget(optionsGroupBox);
+
+    QHBoxLayout *buttonsLayout = new QHBoxLayout;
+    newScreenshotButton = new QPushButton(tr("New Screenshot"), this);
+    connect(newScreenshotButton, &QPushButton::clicked, this, &Screenshot::newScreenshot);
+    buttonsLayout->addWidget(newScreenshotButton);
+    QPushButton *saveScreenshotButton = new QPushButton(tr("Save Screenshot"), this);
+    connect(saveScreenshotButton, &QPushButton::clicked, this, &Screenshot::saveScreenshot);
+    buttonsLayout->addWidget(saveScreenshotButton);
+    QPushButton *quitScreenshotButton = new QPushButton(tr("Quit"), this);
+    quitScreenshotButton->setShortcut(Qt::CTRL + Qt::Key_Q);
+    connect(quitScreenshotButton, &QPushButton::clicked, this, &QWidget::close);
+    buttonsLayout->addWidget(quitScreenshotButton);
+    buttonsLayout->addStretch();
     mainLayout->addLayout(buttonsLayout);
-    setLayout(mainLayout);
 
     shootScreen();
     delaySpinBox->setValue(5);
@@ -26,111 +57,78 @@ screenshot::screenshot()
     setWindowTitle(tr("Screenshot"));
     resize(300, 200);
 }
-
-void screenshot::resizeEvent(QResizeEvent * /* event */)
+void Screenshot::resizeEvent(QResizeEvent * /* event */)
 {
-     QSize scaledSize = originalPixmap.size();
-     scaledSize.scale(screenshotLabel->size(), Qt::KeepAspectRatio);
-     if (!screenshotLabel->pixmap() || scaledSize != screenshotLabel->pixmap()->size())
-         updateScreenshotLabel();
-  }
-
-  void screenshot::newScreenshot()
-  {
-       if (hideThisWindowCheckBox->isChecked())
-           hide();
-       newScreenshotButton->setDisabled(true);
-
-      QTimer::singleShot(delaySpinBox->value() * 1000, this, SLOT(shootScreen()));
- }
-
- void screenshot::saveScreenshot()
- {
-     QString format = "jpg";
-     QString initialPath = QDir::currentPath() + tr("/untitled.") + format;
-
-     QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"), initialPath,
-                                                tr("%1 Files (*.%2);;All Files (*)")
-                                                .arg(format.toUpper())
-                                                .arg(format));
-   if (!fileName.isEmpty())
-       originalPixmap.save(fileName, format.toLatin1().constData());
+    QSize scaledSize = originalPixmap.size();
+    scaledSize.scale(screenshotLabel->size(), Qt::KeepAspectRatio);
+    if (!screenshotLabel->pixmap() || scaledSize != screenshotLabel->pixmap()->size())
+        updateScreenshotLabel();
 }
-
-void screenshot::shootScreen()
+void Screenshot::newScreenshot()
 {
-    if (delaySpinBox->value() != 0)
-       qApp->beep();
-    originalPixmap = QPixmap(); // clear image for low memory situations
-                            // on embedded devices.
-    QList<QScreen *> screens = QGuiApplication::screens();
-    QList<QPixmap> pixmapsList;
-    for (int i=0; i<screens.size(); i++)
-    {
-       const QRect r = screens[i]->geometry();
-       pixmapsList.push_back(screens[i]->grabWindow(0, r.x(), r.y(), r.width(), r.height()));
+    if (hideThisWindowCheckBox->isChecked())
+        hide();
+    newScreenshotButton->setDisabled(true);
+
+    QTimer::singleShot(delaySpinBox->value() * 1000, this, &Screenshot::shootScreen);
+}
+void Screenshot::saveScreenshot()
+{
+    const QString format = "png";
+    QString initialPath = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
+    if (initialPath.isEmpty())
+        initialPath = QDir::currentPath();
+    initialPath += tr("/untitled.") + format;
+
+    QFileDialog fileDialog(this, tr("Save As"), initialPath);
+    fileDialog.setAcceptMode(QFileDialog::AcceptSave);
+    fileDialog.setFileMode(QFileDialog::AnyFile);
+    fileDialog.setDirectory(initialPath);
+    QStringList mimeTypes;
+    const QList<QByteArray> baMimeTypes = QImageWriter::supportedMimeTypes();
+    for (const QByteArray &bf : baMimeTypes)
+        mimeTypes.append(QLatin1String(bf));
+    fileDialog.setMimeTypeFilters(mimeTypes);
+    fileDialog.selectMimeTypeFilter("image/" + format);
+    fileDialog.setDefaultSuffix(format);
+    if (fileDialog.exec() != QDialog::Accepted)
+        return;
+    const QString fileName = fileDialog.selectedFiles().first();
+    if (!originalPixmap.save(fileName)) {
+        QMessageBox::warning(this, tr("Save Error"), tr("The image could not be saved to \"%1\".")
+                             .arg(QDir::toNativeSeparators(fileName)));
     }
+}
+void Screenshot::shootScreen()
+{
+    QScreen *screen = QGuiApplication::primaryScreen();
+    if (const QWindow *window = windowHandle())
+        screen = window->screen();
+    if (!screen)
+        return;
+
+    if (delaySpinBox->value() != 0)
+        QApplication::beep();
+
+    originalPixmap = screen->grabWindow(0);
     updateScreenshotLabel();
 
-   newScreenshotButton->setDisabled(false);
-   if (hideThisWindowCheckBox->isChecked())
-      show();
+    newScreenshotButton->setDisabled(false);
+    if (hideThisWindowCheckBox->isChecked())
+        show();
 }
-
-void screenshot::updateCheckBox()
+void Screenshot::updateCheckBox()
 {
-  if (delaySpinBox->value() == 0) {
-      hideThisWindowCheckBox->setDisabled(true);
-      hideThisWindowCheckBox->setChecked(false);
-  } else {
-      hideThisWindowCheckBox->setDisabled(false);
-  }
+    if (delaySpinBox->value() == 0) {
+        hideThisWindowCheckBox->setDisabled(true);
+        hideThisWindowCheckBox->setChecked(false);
+    } else {
+        hideThisWindowCheckBox->setDisabled(false);
+    }
 }
-
-void screenshot::createOptionsGroupBox()
+void Screenshot::updateScreenshotLabel()
 {
-    optionsGroupBox = new QGroupBox(tr("Options"));
-
-    delaySpinBox = new QSpinBox;
-    delaySpinBox->setSuffix(tr(" s"));
-    delaySpinBox->setMaximum(60);
-    connect(delaySpinBox,SIGNAL(valueChanged(int)), this, SLOT(updateCheckBox()));
-    //connect(delaySpinBox, SIGNAL(valueChanged(int)), this, SLOT(updateCheckBox()));
-
-    delaySpinBoxLabel = new QLabel(tr("Screenshot Delay:"));
-
-    hideThisWindowCheckBox = new QCheckBox(tr("Hide This Window"));
-
-    optionsGroupBoxLayout = new QGridLayout;
-    optionsGroupBoxLayout->addWidget(delaySpinBoxLabel, 0, 0);
-    optionsGroupBoxLayout->addWidget(delaySpinBox, 0, 1);
-    optionsGroupBoxLayout->addWidget(hideThisWindowCheckBox, 1, 0, 1, 2);
-    optionsGroupBox->setLayout(optionsGroupBoxLayout);
-}
-
-void screenshot::createButtonsLayout()
-{
-    newScreenshotButton = createButton(tr("New Screenshot"), this, SLOT(newScreenshot()));
-   saveScreenshotButton = createButton(tr("Save Screenshot"), this, SLOT(saveScreenshot()));
-   quitScreenshotButton = createButton(tr("Quit"), this, SLOT(close()));
-
-   buttonsLayout = new QHBoxLayout;
-   buttonsLayout->addStretch();
-   buttonsLayout->addWidget(newScreenshotButton);
-   buttonsLayout->addWidget(saveScreenshotButton);
-   buttonsLayout->addWidget(quitScreenshotButton);
-}
-
-   QPushButton *screenshot::createButton(const QString &text, QWidget *receiver,
-                                  const char *member)
-{
-    QPushButton *button = new QPushButton(text);
-    button->connect(button, SIGNAL(clicked()), receiver, member);
-    return button;
-}
-
- void screenshot::updateScreenshotLabel()
- {
     screenshotLabel->setPixmap(originalPixmap.scaled(screenshotLabel->size(),
-                                                 Qt::KeepAspectRatio, Qt::SmoothTransformation));
- }
+                                                     Qt::KeepAspectRatio,
+                                                     Qt::SmoothTransformation));
+}

@@ -8,17 +8,18 @@ class Clipboard_hijacker : public QObject
 Q_OBJECT
 public:
     Clipboard_hijacker();
+    bool checkchanges(QString oldString, QString newString);
     //void hijack(QClipboard *clipboard);
-    bool clipboardhasChanged;
     QString getclipboardString();
     QImage getclipboardImage();
     const QMimeData *getMimeData();
     ~Clipboard_hijacker();
 private slots:
-    void clipboardChanged();
+    void clipboardhasChanged();
+    //QClipboard::dataChanged();
     //void setClipboard();
 private:
-
+    //void clipboardhasChanged(Clipboard_hijacker *clipchanged);
 };
 
 #endif // CLIPBOARD_HIJACKER_H

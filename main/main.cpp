@@ -12,15 +12,6 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     MainWindow w;
-    Clipboard_hijacker *clippy = new Clipboard_hijacker();
-    QMimeData myMimeData;
-    screenshot *scshot = new screenshot();
-    while(true)
-    {
-        //QTest::qWait(1000);
-        //usleep(10000);
-        //qDebug() << "sleeping";
-}
 
     //w.show();
     return a.exec();

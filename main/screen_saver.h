@@ -13,41 +13,31 @@ class QPushButton;
 class QSpinBox;
 class QVBoxLayout;
 
-class screenshot : public QWidget
+class Screenshot : public QWidget
 {
     Q_OBJECT
 
 public:
-    screenshot();
+    Screenshot();
 
 protected:
-   void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *event) override;
 
 private slots:
-   void newScreenshot();
-   void saveScreenshot();
-   void shootScreen();
-   void updateCheckBox();
+    void newScreenshot();
+    void saveScreenshot();
+    void shootScreen();
+    void updateCheckBox();
 
 private:
-   void createOptionsGroupBox();
-   void createButtonsLayout();
-   QPushButton *createButton(const QString &text, QWidget *receiver, const char *member);
-   void updateScreenshotLabel();
+    void updateScreenshotLabel();
 
-   QPixmap originalPixmap;
-   QLabel *screenshotLabel;
-   QGroupBox *optionsGroupBox;
-   QSpinBox *delaySpinBox;
-   QLabel *delaySpinBoxLabel;
-   QCheckBox *hideThisWindowCheckBox;
-   QPushButton *newScreenshotButton;
-   QPushButton *saveScreenshotButton;
-   QPushButton *quitScreenshotButton;
+    QPixmap originalPixmap;
 
-   QVBoxLayout *mainLayout;
-   QGridLayout *optionsGroupBoxLayout;
-   QHBoxLayout *buttonsLayout;
+    QLabel *screenshotLabel;
+    QSpinBox *delaySpinBox;
+    QCheckBox *hideThisWindowCheckBox;
+    QPushButton *newScreenshotButton;
 };
 
 #endif // SCREEN_SAVER_H

@@ -1,15 +1,32 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <clipboard_hijacker.h>
+#include <QtGui>
+#include <QLabel>
+#include <QDebug>
+#include <QApplication>
+#include "clipboard_hijacker.h"
+#include "screen_saver.h"
+#include "unistd.h"
+#include <QtTest/QTest>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    connect(QApplication::clipboard(),SIGNAL(dataChanged()),this,&Clipboard_hijacker::clipboardChanged());
+    Clipboard_hijacker *clippy = new Clipboard_hijacker();
+    QMimeData myMimeData;
+    Screenshot *scshot = new Screenshot();
 
-//connect(QApplication::clipboard(), SIGNAL(dataChanged()),this, SLOT(processClipboardChange()));
+    /*while(true)
+    {
+        //QTest::qWait(1000);
+        //usleep(10000);
+        //qDebug() << "sleeping";
+}
+*/
+
 }
 
 MainWindow::~MainWindow()

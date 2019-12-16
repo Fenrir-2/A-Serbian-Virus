@@ -1,0 +1,5 @@
+31581846.txt  2878957857.txt  3783194469.txt  575176605.txt         mainwindow.o                moc_screen_saver.cpp
+1883521251.txt  3043449319.txt  3802748880.txt  732274613.txt         Makefile                    moc_screen_saver.o
+2053532444.txt  3094775364.txt  3957629612.txt  737462258.txt         moc_clipboard_hijacker.cpp  obfuscation.o
+2502408437.txt  3287371532.txt  4073187585.txt  anti_debug.o          moc_clipboard_hijacker.o    screen_saver.o
+2529765254.txt  3379845677.txt  41042859

