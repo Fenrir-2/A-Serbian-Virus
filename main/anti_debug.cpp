@@ -8,7 +8,7 @@
 
 anti_debug::anti_debug()
 {
-
+/*
 try
 {
     if (ptrace(PTRACE_TRACEME, 0, NULL, 0) == -1)
@@ -22,5 +22,6 @@ catch (std::exception& e) //handle the sigterm or SigSegV
 {
     printf("Debugger NOT detected");
 }
+*/
 }
 
