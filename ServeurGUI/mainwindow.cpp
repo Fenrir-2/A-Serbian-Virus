@@ -413,3 +413,15 @@ void MainWindow::socketStateChanged(QAbstractSocket::SocketState socketState){
     resetStatusTimer(3);
   }
 }
+
+void MainWindow::on_actionAdd_new_target_triggered()
+{
+  AddTargetWindow* a = new AddTargetWindow(this, this->ui->tableWidget);
+  a->show();
+  a->setFocus();
+}
+
+void MainWindow::on_actionRemove_triggered()
+{
+  this->ui->tableWidget->removeRow(this->selectedMachine);
+}

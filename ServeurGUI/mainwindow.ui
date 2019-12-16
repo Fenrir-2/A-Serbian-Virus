@@ -367,7 +367,7 @@
    <slot>machineDoubleClicked(int,int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>89</x>
+     <x>165</x>
      <y>117</y>
     </hint>
     <hint type="destinationlabel">

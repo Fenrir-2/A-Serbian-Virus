@@ -16,6 +16,7 @@
 #include <vector>
 #include <utility>
 
+#include "addtargetwindow.h"
 #include "helpwindow.h"
 #include "textdisplaywindow.h"
 
@@ -55,6 +56,10 @@ private slots:
     void on_screenshotButton_clicked();
     void machineDoubleClicked(int, int);
     void socketStateChanged(QAbstractSocket::SocketState);
+
+    void on_actionAdd_new_target_triggered();
+
+    void on_actionRemove_triggered();
 
 private:
     Ui::MainWindow *ui;
