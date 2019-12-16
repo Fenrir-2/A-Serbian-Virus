@@ -178,17 +178,38 @@ void MainWindow::on_actionLoad_triggered()
       qWarning("Couldn't open save file.");
       return;
   }
-  this->loadedFile = saveFile;
 
   this->statusLabel->setText("Loading database...");
 
+
+  this->loadedFile = saveFile;
   QByteArray fileStr = saveFile->readAll();
   loadedFile->close();
 
   QJsonDocument loadedJSON(QJsonDocument::fromJson(fileStr));
-  qDebug() << loadedJSON.object();
-
+  QJsonArray machinesArray = loadedJSON.object().operator[]("Machines").toArray();
+  std::vector<std::pair<QString, QString>> machinesVector = std::vector<std::pair<QString, QString>>();
+  foreach (const QJsonValue & value, machinesArray) {
+    QJsonObject obj = value.toObject();
+    machinesVector.push_back(std::pair<QString, QString>(obj["Machine Name"].toString(),obj["Machine IP"].toString()));
+  }
+  populateTable(machinesVector);
   resetStatusTimer(3);
+}
+
+/**
+ * @brief MainWindow::populateTable Fills the table according to a given list
+ * @param machinesList the list of machines, organised as Name|IP
+ */
+void MainWindow::populateTable(std::vector<std::pair<QString, QString>> machinesList){
+  this->ui->tableWidget->setRowCount(machinesList.size());
+  int row = 0;
+  for (std::pair<QString, QString> pair : machinesList){
+    this->ui->tableWidget->setItem(row, 0, new QTableWidgetItem(pair.first));
+    this->ui->tableWidget->setItem(row, 1, new QTableWidgetItem(pair.second));
+    this->ui->tableWidget->setItem(row, 2, new QTableWidgetItem("Disconnected"));
+    row++;
+  }
 }
 
 /**

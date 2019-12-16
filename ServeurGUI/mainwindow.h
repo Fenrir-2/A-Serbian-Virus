@@ -13,6 +13,8 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QClipboard>
+#include <vector>
+#include <utility>
 
 //FOR DEBUG PURPOSES
 #include <iostream>
@@ -39,6 +41,7 @@ public:
     void resetStatusTimer(int);
     void resetStatus();
     void sendCmd(QString);
+    void populateTable(std::vector<std::pair<QString, QString>>);
 
 private slots:
     void on_actionHelp_triggered();
